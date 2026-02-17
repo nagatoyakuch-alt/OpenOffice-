@@ -1,1 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Minha IA</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
+.container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border: none;
+  border-radius: 5px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: #2563eb;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#chatScreen {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+#chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.chat-input {
+  display: flex;
+}
+
+.chat-input input {
+  flex: 1;
+}
+
+.chat-input button {
+  width: auto;
+}
+
+.logout {
+  background: red;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div id="loginScreen" class="card">
+    <h2>Login</h2>
+    <input id="username" placeholder="Usuário">
+    <input id="password" type="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+  </div>
+</div>
+
+<div id="chatScreen">
+  <button class="logout" onclick="logout()">Sair</button>
+  <div id="chat"></div>
+  <div class="chat-input">
+    <input id="message" placeholder="Digite sua pergunta...">
+    <button onclick="sendMessage()">Enviar</button>
+  </div>
+</div>
+
+<script>
+const FIXED_USER = "West";
+const FIXED_PASS = "123450";
+
+function login() {
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+
+  if (user === FIXED_USER && pass === FIXED_PASS) {
+    localStorage.setItem("auth", "true");
+    showChat();
+  } else {
+    alert("Usuário ou senha incorretos");
+  }
+}
+
+function logout() {
+  localStorage.removeItem("auth");
+  location.reload();
+}
+
+function showChat() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("chatScreen").style.display = "flex";
+}
+
+if (localStorage.getItem("auth") === "true") {
+  showChat();
+}
+
+async function sendMessage() {
+  const input = document.getElementById("message");
+  const chat = document.getElementById("chat");
+
+  const userMessage = input.value;
+  if (!userMessage) return;
+
+  chat.innerHTML += "<p><b>Você:</b> " + userMessage + "</p>";
+
+  const response = await fetch("http://localhost:3000/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: userMessage })
+  });
+
+  const data = await response.json();
+
+  chat.innerHTML += "<p><b>IA:</b> " + data.reply + "</p>";
+  input.value = "";
+  chat.scrollTop = chat.scrollHeight;
+}
+</script>
+
+</body>
+</html>
